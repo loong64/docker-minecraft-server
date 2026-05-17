@@ -18,6 +18,7 @@ on:
       - "zensical.toml"
       - ".readthedocs.yaml"
       - "renovate.json5"
+  workflow_dispatch:
 
 jobs:
   build:
@@ -27,69 +28,53 @@ jobs:
         # NOTE: the "latest" variant is identified in the Docker meta step's 'latest' config
         variant:
           - java25
-          - java25-alpine
           - java25-jdk
           - java21
-          - java21-alpine
           - java21-jdk
           - java17
-          - java16
           - java11
           - java8
           - java8-jdk
         include:
         # JAVA 25
           - variant: java25
-            baseImage: eclipse-temurin:25-jre
-            platforms: linux/amd64,linux/arm64
-            mcVersion: latest
-          - variant: java25-alpine
-            baseImage: eclipse-temurin:25-jre-alpine
-            platforms: linux/amd64,linux/arm64
+            baseImage: ghcr.io/loong64/openjdk-loongson:25-jre-debian-trixie
+            platforms: linux/loong64
             mcVersion: latest
           - variant: java25-jdk
-            baseImage: eclipse-temurin:25
-            platforms: linux/amd64,linux/arm64
+            baseImage: ghcr.io/loong64/openjdk-loongson:25-jdk-debian-trixie
+            platforms: linux/loong64
             mcVersion: latest
         # JAVA 21:
           - variant: java21
-            baseImage: eclipse-temurin:21-jre
-            platforms: linux/amd64,linux/arm64
+            baseImage: ghcr.io/loong64/openjdk-loongson:21-jre-debian-trixie
+            platforms: linux/loong64
             mcVersion: 1.21.11
           - variant: java21-jdk
-            baseImage: eclipse-temurin:21
-            platforms: linux/amd64,linux/arm64
-            mcVersion: 1.21.11
-          - variant: java21-alpine
-            baseImage: eclipse-temurin:21-jre-alpine
-            platforms: linux/amd64,linux/arm64
+            baseImage: ghcr.io/loong64/openjdk-loongson:21-jdk-debian-trixie
+            platforms: linux/loong64
             mcVersion: 1.21.11
         # JAVA 17:
           - variant: java17
             # jammy doesn't work until minecraft updates to https://github.com/netty/netty/issues/12343
-            baseImage: eclipse-temurin:17-jre-focal
-            platforms: linux/amd64,linux/arm/v7,linux/arm64
+            baseImage: docker pull ghcr.io/loong64/openjdk-loongson:17-jre-debian-trixie
+            platforms: linux/loong64
             mcVersion: 1.20.4
-        # JAVA 16
-          - variant: java16
-            baseImage: adoptopenjdk:16-jre-hotspot
-            platforms: linux/amd64,linux/arm/v7,linux/arm64
-            mcVersion: 1.16.5
         # JAVA 11
           - variant: java11
-            baseImage: adoptopenjdk:11-jre-hotspot
-            platforms: linux/amd64,linux/arm/v7,linux/arm64
+            baseImage: ghcr.io/loong64/openjdk-loongson:11-jre-debian-trixie
+            platforms: linux/loong64
             mcVersion: 1.16.4
         # JAVA 8: NOTE: Unable to go past 8u312 because of Forge dependencies
           - variant: java8
-            baseImage: eclipse-temurin:8u312-b07-jre-focal
-            platforms: linux/amd64,linux/arm/v7,linux/arm64
+            baseImage: ghcr.io/loong64/openjdk-loongson:8-jre-debian-trixie
+            platforms: linux/loong64
             mcVersion: 1.12.2
             # Pin version for Java 8, also be sure to set in verify-pr.yml
             mcHelperVersion: 1.51.3-java8
           - variant: java8-jdk
-            baseImage: eclipse-temurin:8u312-b07-jdk-focal
-            platforms: linux/amd64,linux/arm64
+            baseImage: ghcr.io/loong64/openjdk-loongson:8-jdk-debian-trixie
+            platforms: linux/loong64
             mcVersion: 1.12.2
             # Pin version for Java 8, also be sure to set in verify-pr.yml
             mcHelperVersion: 1.51.3-java8
@@ -97,7 +82,7 @@ jobs:
       IMAGE_TO_TEST: "${{ github.repository_owner }}/minecraft-server:test-${{ matrix.variant }}-${{ github.run_id }}"
       HAS_IMAGE_REPO_ACCESS: ${{ secrets.DOCKER_USER != '' && secrets.DOCKER_PASSWORD != '' }}
       MAIN_VARIANT: java25
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v6.0.2
@@ -112,7 +97,6 @@ jobs:
           # NOTE for forks: if your Docker Hub organization doesn't match your Github repo's,
           # then the use of ${{ github.repository_owner }} will need to be replaced.
           images: |
-            ${{ github.repository_owner }}/minecraft-server
             ghcr.io/${{ github.repository_owner }}/minecraft-server
           tags: |
             # Apply the variant as a moving tag for most recent commit per variant
@@ -145,7 +129,7 @@ jobs:
       - name: Build for test
         uses: docker/build-push-action@v7.1.0
         with:
-          platforms: linux/amd64
+          platforms: linux/loong64
           tags: ${{ env.IMAGE_TO_TEST }}
           # ensure latest base image is used
           pull: true
@@ -167,20 +151,20 @@ jobs:
         run: |
           tests/test.sh
 
-      - name: Login to DockerHub
-        uses: docker/login-action@v4.1.0
-        if: env.HAS_IMAGE_REPO_ACCESS
-        with:
-          username: ${{ secrets.DOCKER_USER }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+      # - name: Login to DockerHub
+      #   uses: docker/login-action@v4.1.0
+      #   if: env.HAS_IMAGE_REPO_ACCESS
+      #   with:
+      #     username: ${{ secrets.DOCKER_USER }}
+      #     password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Login to GHCR
         uses: docker/login-action@v4.1.0
         if: env.HAS_IMAGE_REPO_ACCESS
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ github.token }}
+          username: la64-bot
+          password: ${{ secrets.GH_TOKEN }}
 
       - name: Build and push
         uses: docker/build-push-action@v7.1.0
