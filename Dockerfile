@@ -17,7 +17,7 @@ RUN --mount=target=/build,source=build \
     /build/run.sh install-packages
 
 ARG GOSU_VERSION=1.19
-ADD ${GITHUB_BASEURL}/loong64/gosu/releases/download/${GOSU_VERSION}/gosu-${TARGETARCH}${TARGETVARIANT} /usr/local/bin/gosu
+ADD https://github.com/loong64/gosu/releases/download/${GOSU_VERSION}/gosu-${TARGETARCH}${TARGETVARIANT} /usr/local/bin/gosu
 RUN chmod +x /usr/local/bin/gosu
 
 RUN --mount=target=/build,source=build \
@@ -46,7 +46,7 @@ RUN easy-add --var os=${TARGETOS} --var arch=${TARGETARCH}${TARGETVARIANT} \
   --from ${GITHUB_BASEURL}/loong64-abi2-0/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_{{.os}}_{{.arch}}.tar.gz
 
 # renovate: datasource=github-releases packageName=loong64-abi2-0/mc-monitor
-ARG MC_MONITOR_VERSION=0.16.2
+ARG MC_MONITOR_VERSION=0.16.3
 RUN easy-add --var os=${TARGETOS} --var arch=${TARGETARCH}${TARGETVARIANT} \
   --var version=${MC_MONITOR_VERSION} --var app=mc-monitor --file {{.app}} \
   --from ${GITHUB_BASEURL}/loong64-abi2-0/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_{{.os}}_{{.arch}}.tar.gz
