@@ -19,7 +19,7 @@ apt-get install -y \
   git-lfs \
   jq \
   dos2unix \
-  mysql-client \
+  mariadb-client-compat \
   tzdata \
   rsync \
   nano \
