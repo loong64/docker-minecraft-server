@@ -168,7 +168,6 @@ jobs:
 
       - name: Build and push
         uses: docker/build-push-action@v7.1.0
-        if: github.actor == github.repository_owner
         with:
           platforms: ${{ matrix.platforms }}
           push: >
