@@ -15,7 +15,11 @@ ARG FORCE_INSTALL_PACKAGES=1
 RUN --mount=target=/build,source=build \
     TARGET=${TARGETARCH}${TARGETVARIANT} \
     /build/run.sh install-packages
-COPY --from=tianon/gosu /gosu /usr/local/bin/
+
+ARG GOSU_VERSION=1.19
+RUN easy-add --var os=${TARGETOS} --var arch=${TARGETARCH}${TARGETVARIANT} \
+  --var version=${GOSU_VERSION} --var app=gosu --file {{.app}}-{{.version}}-{{.os}}-{{.arch}}/{{.app}} \
+  --from ${GITHUB_BASEURL}/loong64/{{.app}}/releases/download/{{.version}}/{{.app}}-{{.version}}-{{.os}}-{{.arch}}.tar.gz
 
 RUN --mount=target=/build,source=build \
     /build/run.sh setup-user
