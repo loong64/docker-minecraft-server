@@ -17,9 +17,8 @@ RUN --mount=target=/build,source=build \
     /build/run.sh install-packages
 
 ARG GOSU_VERSION=1.19
-RUN easy-add --var os=${TARGETOS} --var arch=${TARGETARCH}${TARGETVARIANT} \
-  --var version=${GOSU_VERSION} --var app=gosu --file {{.app}}-{{.version}}-{{.os}}-{{.arch}}/{{.app}} \
-  --from ${GITHUB_BASEURL}/loong64/{{.app}}/releases/download/{{.version}}/{{.app}}-{{.version}}-{{.os}}-{{.arch}}.tar.gz
+ADD ${GITHUB_BASEURL}/loong64/gosu/releases/download/${GOSU_VERSION}/gosu-${TARGETARCH}${TARGETVARIANT} /usr/local/bin/gosu
+RUN chmod +x /usr/local/bin/gosu
 
 RUN --mount=target=/build,source=build \
     /build/run.sh setup-user
